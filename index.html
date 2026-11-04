@@ -58,7 +58,7 @@
     fetch('/content/settings.json')
         .then(response => response.json())
         .then(data => {
-            document.getElementById('page-title').innerText = data.title || "Coming Soon";
+            document.getElementById('page-title').innerText = data.title || "Coming Soon from the HCA";
             document.getElementById('headline').innerText = data.headline || "Something new is coming.";
             document.getElementById('subheadline').innerText = data.subheadline || "Sign up for updates.";
         })
