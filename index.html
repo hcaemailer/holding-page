@@ -83,13 +83,13 @@
                 method: 'POST',
                 headers: {
                     'accept': 'application/json',
-                    'api-key': 'YOUR_BREVO_API_KEY_HERE', // Replace or map to serverless env var
+                    'api-key': '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', // Replace or map to serverless env var
                     'content-type': 'application/json'
                 },
                 body: JSON.stringify({
                     email: email,
                     attributes: { FNAME: name },
-                    listIds: [2], // Replace with your Brevo List ID number
+                    listIds: [#2], // Replace with your Brevo List ID number
                     updateEnabled: true
                 })
             });
