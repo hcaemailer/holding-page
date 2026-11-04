@@ -1,21 +1,47 @@
 exports.handler = async function(event, context) {
-    // 1. Only allow POST requests
     if (event.httpMethod !== "POST") {
         return { statusCode: 405, body: JSON.stringify({ error: "Method Not Allowed" }) };
     }
 
     try {
-        const { email, name } = JSON.parse(event.body);
+        const { email, name, consent, captchaToken } = JSON.parse(event.body);
 
-        if (!email) {
-            return { statusCode: 400, body: JSON.stringify({ error: "Email is required" }) };
+        // 1. Basic validation
+        if (!email || !consent) {
+            return { statusCode: 400, body: JSON.stringify({ error: "Email and opt-in consent are required." }) };
         }
 
-        // 2. Fetch environment variables
+        if (!captchaToken) {
+            return { statusCode: 400, body: JSON.stringify({ error: "CAPTCHA token missing." }) };
+        }
+
+        // 2. Verify Turnstile CAPTCHA Token with Cloudflare API
+        const TURNSTILE_SECRET_KEY = process.env.TURNSTILE_SECRET_KEY;
+        
+        // If TURNSTILE_SECRET_KEY is set in Netlify, perform verification
+        if (TURNSTILE_SECRET_KEY) {
+            const verifyRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+                method: 'POST',
+                headers: { 'content-type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({
+                    secret: TURNSTILE_SECRET_KEY,
+                    response: captchaToken,
+                    remoteip: event.headers['client-ip'] || event.headers['x-forwarded-for'] || ''
+                })
+            });
+
+            const verifyData = await verifyRes.json();
+
+            if (!verifyData.success) {
+                return { statusCode: 400, body: JSON.stringify({ error: "Anti-spam verification failed. Please try again." }) };
+            }
+        }
+
+        // 3. Environment Variables for Brevo
         const BREVO_API_KEY = process.env.BREVO_API_KEY;
         const BREVO_LIST_ID = parseInt(process.env.BREVO_LIST_ID || "2", 10);
 
-        // 3. Make the secure request to Brevo using 'FIRSTNAME'
+        // 4. Submit Contact to Brevo API
         const response = await fetch('https://api.brevo.com/v3/contacts', {
             method: 'POST',
             headers: {
@@ -25,7 +51,7 @@ exports.handler = async function(event, context) {
             },
             body: JSON.stringify({
                 email: email,
-                attributes: { FIRSTNAME: name || "" }, // Fixed: changed FNAME to FIRSTNAME
+                attributes: { FIRSTNAME: name || "" },
                 listIds: [BREVO_LIST_ID],
                 updateEnabled: true
             })
