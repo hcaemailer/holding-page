@@ -11,11 +11,11 @@ exports.handler = async function(event, context) {
             return { statusCode: 400, body: JSON.stringify({ error: "Email is required" }) };
         }
 
-        // 2. Fetch the Brevo API key securely from Netlify's environment variables
+        // 2. Fetch environment variables
         const BREVO_API_KEY = process.env.BREVO_API_KEY;
         const BREVO_LIST_ID = parseInt(process.env.BREVO_LIST_ID || "2", 10);
 
-        // 3. Make the secure server-to-server request to Brevo
+        // 3. Make the secure request to Brevo using 'FIRSTNAME'
         const response = await fetch('https://api.brevo.com/v3/contacts', {
             method: 'POST',
             headers: {
@@ -25,7 +25,7 @@ exports.handler = async function(event, context) {
             },
             body: JSON.stringify({
                 email: email,
-                attributes: { FNAME: name || "" },
+                attributes: { FIRSTNAME: name || "" }, // Fixed: changed FNAME to FIRSTNAME
                 listIds: [BREVO_LIST_ID],
                 updateEnabled: true
             })
