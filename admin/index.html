@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Manager</title>
+</head>
+<body>
+    <!-- Include the Decap CMS script -->
+    <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+    <script>
+        // Initialize CMS config directly via code block for easy deployment
+        CMS.init({
+            config: {
+                backend: {
+                    name: "git-gateway",
+                    branch: "main"
+                },
+                media_folder: "images",
+                public_folder: "/images",
+                collections: [{
+                    name: "settings",
+                    label: "Holding Page Settings",
+                    files: [{
+                        file: "content/settings.json",
+                        label: "Page Content",
+                        name: "settings",
+                        fields: [
+                            { label: "Browser Page Title", name: "title", widget: "string" },
+                            { label: "Main Headline", name: "headline", widget: "string" },
+                            { label: "Subheadline / Description", name: "subheadline", widget: "text" }
+                        ]
+                    }]
+                }]
+            }
+        });
+    </script>
+</body>
+</html>
